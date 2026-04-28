@@ -3,3 +3,11 @@ export type ApiResponse<T> = {
   message: string;
   data?: T;
 };
+
+export interface IJwtPayload {
+  id: string;
+  email: string;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

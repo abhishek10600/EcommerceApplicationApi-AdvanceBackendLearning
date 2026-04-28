@@ -26,4 +26,16 @@ export class AuthRepository implements IAuthRepository {
 
     return user;
   }
+
+  async createRefreshToken(data: {
+    token: string;
+    userId: string;
+    expiresAt: Date;
+  }) {
+    const token = await prisma.refreshToken.create({
+      data,
+    });
+
+    return token;
+  }
 }
