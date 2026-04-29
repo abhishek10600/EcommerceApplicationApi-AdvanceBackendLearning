@@ -15,6 +15,8 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
 
     const decoded = verifyAccessToken(token) as IJwtPayload;
 
+    console.log({ decoded });
+
     const user = {
       id: decoded.id,
       email: decoded.email,
@@ -23,8 +25,26 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
       updatedAt: decoded.updatedAt,
     };
 
+    console.log({ user });
+
     req.user = user;
+
+    next();
   } catch (error) {
     next(new AppError("Invalid or expired token", 401));
   }
+};
+
+export const verifySeller = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const user = req.user;
+
+  if (user.role !== "SELLER") {
+    throw new AppError("You are not authorized.", 401);
+  }
+
+  next();
 };

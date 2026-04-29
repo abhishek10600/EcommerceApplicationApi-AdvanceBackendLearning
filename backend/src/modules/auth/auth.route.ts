@@ -1,10 +1,20 @@
 import express from "express";
 import { validate } from "../../middlewares/validate.middleware.js";
-import { loginUserSchema, registerUserSchema } from "./auth.schema.js";
 import {
+  loginUserSchema,
+  logoutUserSchema,
+  refreshTokenSchema,
+  registerUserSchema,
+} from "./auth.schema.js";
+import {
+  getCurrentUserController,
   loginUserController,
+  logoutAllDevices,
+  logoutController,
+  refreshTokenController,
   registerUserController,
 } from "./auth.controller.js";
+import { verifyUser } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -13,5 +23,16 @@ router
   .post(validate(registerUserSchema), registerUserController);
 
 router.route("/login").post(validate(loginUserSchema), loginUserController);
+router.route("/me").get(verifyUser, getCurrentUserController);
+
+router
+  .route("/logout")
+  .post(verifyUser, validate(logoutUserSchema), logoutController);
+
+router.route("/logout-all-devices").post(verifyUser, logoutAllDevices);
+
+router
+  .route("/refresh-token")
+  .post(validate(refreshTokenSchema), refreshTokenController);
 
 export default router;
