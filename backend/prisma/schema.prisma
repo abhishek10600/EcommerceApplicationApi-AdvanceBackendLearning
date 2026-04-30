@@ -71,7 +71,7 @@ model Address {
 
 model Category {
   id                  String   @id @default(uuid())
-  categoryName        String
+  categoryName        String   @unique
   categoryDescription String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -88,10 +88,10 @@ model Product {
   productImagesUrls  String[]
   price              Decimal  @db.Decimal(10, 2)
   stock              Int
-  rating             Int
+  rating             Int      @default(0)
   isActive           Boolean  @default(true)
-  createdAt          DateTime
-  updatedAt          DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   category   Category     @relation(fields: [categoryId], references: [id])

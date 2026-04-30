@@ -15,8 +15,6 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
 
     const decoded = verifyAccessToken(token) as IJwtPayload;
 
-    console.log({ decoded });
-
     const user = {
       id: decoded.id,
       email: decoded.email,
@@ -24,8 +22,6 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
       createdAt: decoded.createdAt,
       updatedAt: decoded.updatedAt,
     };
-
-    console.log({ user });
 
     req.user = user;
 
@@ -43,6 +39,20 @@ export const verifySeller = (
   const user = req.user;
 
   if (user.role !== "SELLER") {
+    throw new AppError("You are not authorized.", 401);
+  }
+
+  next();
+};
+
+export const verifyAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const user = req.user;
+
+  if (user.role !== "ADMIN") {
     throw new AppError("You are not authorized.", 401);
   }
 
