@@ -12,3 +12,7 @@ export const toCategotryResponse = (
     updatedAt: category.updatedAt,
   };
 };
+
+export const toCategoryListResponse = (categories: Category[]) => {
+  return categories.map(toCategotryResponse);
+};

@@ -3,7 +3,7 @@ import { AppError } from "../../utils/AppError.js";
 import { uploadToCloudinary } from "../../utils/cloudinary.helper.js";
 import { IProductRepository } from "./product.interface.js";
 import { createProductDTO } from "./product.schema.js";
-import { toProductResponse } from "./product.mapper.js";
+import { toProductListResponse, toProductResponse } from "./product.mapper.js";
 
 export class ProductService {
   constructor(private productRepo: IProductRepository) {}
@@ -32,5 +32,11 @@ export class ProductService {
     });
 
     return toProductResponse(newProduct);
+  }
+
+  async getProductsByCategoryId(categoryId: string) {
+    const products = await this.productRepo.getProductsByCategoryId(categoryId);
+
+    return toProductListResponse(products);
   }
 }
