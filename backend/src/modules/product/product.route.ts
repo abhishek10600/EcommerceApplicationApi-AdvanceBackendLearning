@@ -1,10 +1,19 @@
 import express from "express";
-import { verifySeller, verifyUser } from "../../middlewares/auth.middleware.js";
+import {
+  verifyAdmin,
+  verifySeller,
+  verifyUser,
+} from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
-import { createProductSchema } from "./product.schema.js";
+import { createProductSchema, updateProductSchema } from "./product.schema.js";
 import {
   createProductController,
+  deleteProductController,
+  getAllActiveProductsController,
+  getAllProducts,
   getProductsByCategoryController,
+  toggleActiveProductController,
+  updateProductController,
 } from "./product.controller.js";
 import { upload } from "../../middlewares/multer.middleware.js";
 
@@ -20,6 +29,27 @@ router
     createProductController,
   );
 
+router.route("/all-products").get(verifyUser, verifyAdmin, getAllProducts);
+
+router.route("/all-active-products").get(getAllActiveProductsController);
+
 router.route("/category/:catId").get(getProductsByCategoryController);
+
+router
+  .route("/update-product/:prodId")
+  .patch(
+    verifyUser,
+    verifySeller,
+    validate(updateProductSchema),
+    updateProductController,
+  );
+
+router
+  .route("/toggle-is-active/:prodId")
+  .patch(verifyUser, verifySeller, toggleActiveProductController);
+
+router
+  .route("/delete-product/:prodId")
+  .delete(verifyUser, verifySeller, deleteProductController);
 
 export default router;

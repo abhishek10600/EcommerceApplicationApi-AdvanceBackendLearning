@@ -8,6 +8,7 @@ export const toProductResponse = (product: Product) => {
     productImageUrls: product.productImagesUrls,
     price: product.price,
     stock: product.stock,
+    isActive: product.isActive,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
   };

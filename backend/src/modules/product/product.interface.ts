@@ -1,4 +1,5 @@
-import { Product } from "@prisma/client";
+import { Prisma, Product } from "@prisma/client";
+import { updateProductDTO } from "./product.schema.js";
 
 export interface IProductRepository {
   createProduct(data: {
@@ -11,5 +12,30 @@ export interface IProductRepository {
     stock: number;
   }): Promise<Product>;
 
+  getProductById(productId: string): Promise<Product | null>;
+
+  getProductByIdAndSellerId(
+    productId: string,
+    sellerId: string,
+  ): Promise<Product | null>;
+
+  getAllProducts(): Promise<Product[]>;
+
+  getAllActiveProducts(): Promise<Product[]>;
+
   getProductsByCategoryId(categoryId: string): Promise<Product[]>;
+
+  updateProduct(
+    data: Prisma.ProductUpdateInput,
+    productId: string,
+    sellerId: string,
+  ): Promise<Product>;
+
+  toggleActiveProduct(
+    productId: string,
+    sellerId: string,
+    isActive: boolean,
+  ): Promise<Product>;
+
+  deleteProduct(productId: string, sellerId: string): Promise<any>;
 }
