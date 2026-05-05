@@ -8,13 +8,23 @@ export class OrderService {
   constructor(private orderRepo: IOrderRepository) {}
 
   async createOrder(userId: string, data: createOrderDTO) {
-    const { items } = data;
+    const { items, addressId } = data;
 
     if (!items || items.length === 0) {
       throw new AppError("Order must contain at least one item.", 400);
     }
 
     return await prisma.$transaction(async (tx) => {
+      const address = await tx.address.findUnique({
+        where: {
+          id: addressId,
+        },
+      });
+
+      if (!address || address.userId !== userId) {
+        throw new AppError("Invalid address", 400);
+      }
+
       let totalPrice = new Prisma.Decimal(0);
       let totalItems = 0;
 
@@ -80,7 +90,29 @@ export class OrderService {
         },
       });
 
-      return order;
+      await tx.orderAddress.create({
+        data: {
+          orderId: order.id,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          state: address.state,
+          pinCode: address.pinCode,
+          country: address.country,
+        },
+      });
+
+      const fullOrder = await tx.order.findUnique({
+        where: {
+          id: order.id,
+        },
+        include: {
+          items: true,
+          orderAddress: true,
+        },
+      });
+
+      return fullOrder;
     });
   }
 

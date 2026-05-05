@@ -11,4 +11,3 @@ export interface IJwtPayload {
   createdAt: Date;
   updatedAt: Date;
 }
-
