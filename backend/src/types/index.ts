@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 export type ApiResponse<T> = {
   success: boolean;
   message: string;
@@ -11,3 +13,13 @@ export interface IJwtPayload {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type CartWithItems = Prisma.CartGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: true;
+      };
+    };
+  };
+}>;
