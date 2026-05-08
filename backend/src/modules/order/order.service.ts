@@ -25,36 +25,43 @@ export class OrderService {
         throw new AppError("Invalid address", 400);
       }
 
+      const productIds = items.map((item) => item.productId);
+
+      const products = await tx.product.findMany({
+        where: {
+          id: {
+            in: productIds,
+          },
+        },
+      });
+
+      const productMap = new Map(
+        products.map((product) => [product.id, product]),
+      );
+
       let totalPrice = new Prisma.Decimal(0);
       let totalItems = 0;
 
       const orderItemsData = [];
 
       for (const item of items) {
-        const product = await tx.product.findUnique({
-          where: {
-            id: item.productId,
-          },
-        });
+        const product = productMap.get(item.productId);
 
         if (!product) {
-          throw new AppError("Product not found.", 404);
+          throw new AppError("Product not found", 404);
         }
 
         if (!product.isActive) {
-          throw new AppError(`${product.productName} is not available`, 400);
+          throw new AppError("Product is not available", 400);
         }
 
-        if (product.stock < item.quantity) {
-          throw new AppError(
-            `Insufficient stock for ${product.productName}`,
-            400,
-          );
-        }
-
-        await tx.product.update({
+        const updatedStock = await tx.product.updateMany({
           where: {
-            id: product.id,
+            id: item.productId,
+            stock: {
+              gte: item.quantity,
+            },
+            isActive: true,
           },
           data: {
             stock: {
@@ -62,6 +69,10 @@ export class OrderService {
             },
           },
         });
+
+        if (updatedStock.count === 0) {
+          throw new AppError("Insufficient stock", 400);
+        }
 
         const itemTotal = product.price.mul(item.quantity);
 

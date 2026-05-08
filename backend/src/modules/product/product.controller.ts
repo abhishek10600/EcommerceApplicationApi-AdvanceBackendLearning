@@ -36,7 +36,7 @@ export const getAllProducts = catchAsync(
 
 export const getAllActiveProductsController = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await productService.getAllActiveProducts();
+    const result = await productService.getAllActiveProducts(req.query);
 
     sendResponse(res, 200, {
       success: true,

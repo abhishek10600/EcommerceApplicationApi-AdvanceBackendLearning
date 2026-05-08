@@ -1,5 +1,6 @@
 import { Prisma, Product } from "@prisma/client";
 import { updateProductDTO } from "./product.schema.js";
+import { ProductQueryOptions } from "../../types/index.js";
 
 export interface IProductRepository {
   createProduct(data: {
@@ -21,7 +22,7 @@ export interface IProductRepository {
 
   getAllProducts(): Promise<Product[]>;
 
-  getAllActiveProducts(): Promise<Product[]>;
+  getAllActiveProducts(filters: ProductQueryOptions): Promise<Product[]>;
 
   getProductsByCategoryId(categoryId: string): Promise<Product[]>;
 

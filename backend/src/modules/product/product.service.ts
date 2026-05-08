@@ -7,6 +7,7 @@ import {
 import { IProductRepository } from "./product.interface.js";
 import { createProductDTO, updateProductDTO } from "./product.schema.js";
 import { toProductListResponse, toProductResponse } from "./product.mapper.js";
+import { ProductQueryOptions } from "../../types/index.js";
 
 export class ProductService {
   constructor(private productRepo: IProductRepository) {}
@@ -49,8 +50,8 @@ export class ProductService {
     return toProductListResponse(products);
   }
 
-  async getAllActiveProducts() {
-    const products = await this.productRepo.getAllActiveProducts();
+  async getAllActiveProducts(filters: ProductQueryOptions) {
+    const products = await this.productRepo.getAllActiveProducts(filters);
 
     return toProductListResponse(products);
   }

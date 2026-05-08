@@ -1,7 +1,9 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { IProductRepository } from "./product.interface.js";
 import { updateProductDTO } from "./product.schema.js";
+import { ProductQueryOptions } from "../../types/index.js";
+import e from "cors";
 
 export class ProductRepository implements IProductRepository {
   async createProduct(data: {
@@ -47,11 +49,55 @@ export class ProductRepository implements IProductRepository {
     return products;
   }
 
-  async getAllActiveProducts() {
+  async getAllActiveProducts(filters: ProductQueryOptions) {
+    const { categoryId, minPrice, maxPrice, sortBy } = filters;
+
+    const where: Prisma.ProductWhereInput = {
+      isActive: true,
+    };
+
+    // filter by category
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    // filter by price
+    if (minPrice || maxPrice) {
+      where.price = {};
+
+      if (minPrice) {
+        where.price.gte = new Prisma.Decimal(minPrice);
+      }
+
+      if (maxPrice) {
+        where.price.lte = new Prisma.Decimal(maxPrice);
+      }
+    }
+
+    // sorting
+    let orderBy: Prisma.ProductOrderByWithRelationInput = {
+      createdAt: "desc",
+    };
+
+    if (sortBy === "latest") {
+      orderBy = { createdAt: "desc" };
+    }
+
+    if (sortBy === "oldest") {
+      orderBy = { createdAt: "asc" };
+    }
+
+    if (sortBy === "priceAsc") {
+      orderBy = { price: "asc" };
+    }
+
+    if (sortBy === "priceDesc") {
+      orderBy = { price: "desc" };
+    }
+
     const products = await prisma.product.findMany({
-      where: {
-        isActive: true,
-      },
+      where,
+      orderBy,
     });
 
     return products;

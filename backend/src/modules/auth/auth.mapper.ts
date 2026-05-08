@@ -18,7 +18,7 @@ export const toUserResponse = (user: User): UserResponseDTO => {
 export const toJwtPayload = (user: User): IJwtPayload => {
   return {
     id: user.id,
-    email: user.id,
+    email: user.email,
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
