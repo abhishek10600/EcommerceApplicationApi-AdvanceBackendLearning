@@ -8,6 +8,8 @@ import { IProductRepository } from "./product.interface.js";
 import { createProductDTO, updateProductDTO } from "./product.schema.js";
 import { toProductListResponse, toProductResponse } from "./product.mapper.js";
 import { ProductQueryOptions } from "../../types/index.js";
+import redis from "../../lib/redis.js";
+import { invalidateProductCache } from "../../utils/cache.helper.js";
 
 export class ProductService {
   constructor(private productRepo: IProductRepository) {}
@@ -35,6 +37,8 @@ export class ProductService {
       stock: Number(data.stock),
     });
 
+    await invalidateProductCache();
+
     return toProductResponse(newProduct);
   }
 
@@ -51,9 +55,30 @@ export class ProductService {
   }
 
   async getAllActiveProducts(filters: ProductQueryOptions) {
-    const products = await this.productRepo.getAllActiveProducts(filters);
+    const cacheKey = `products:${JSON.stringify(filters)}`;
 
-    return toProductListResponse(products);
+    const cachedProducts = await redis.get(cacheKey);
+
+    if (cachedProducts) {
+      console.log("CACHE HIT");
+      return JSON.parse(cachedProducts);
+    }
+
+    console.log("CACHE MISS");
+
+    const result = await this.productRepo.getAllActiveProducts(filters);
+
+    const formattedResult = {
+      products: toProductListResponse(result.products),
+      nextCursor: result.nextCursor,
+      hasMore: result.hasMore,
+    };
+
+    await redis.set(cacheKey, JSON.stringify(formattedResult), "EX", 300);
+
+    // console.log(result);
+
+    return formattedResult;
   }
 
   async editProduct(
@@ -102,6 +127,8 @@ export class ProductService {
       throw new AppError("Product not found or unauthorized", 404);
     }
 
+    await invalidateProductCache();
+
     return toProductResponse(updatedProduct);
   }
 
@@ -123,6 +150,8 @@ export class ProductService {
       sellerId,
       !existingProduct.isActive,
     );
+
+    await invalidateProductCache();
 
     return toProductResponse(updatedProduct);
   }
@@ -147,5 +176,7 @@ export class ProductService {
     });
 
     await this.productRepo.deleteProduct(productId, sellerId);
+
+    await invalidateProductCache();
   }
 }

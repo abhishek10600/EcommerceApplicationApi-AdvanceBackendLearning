@@ -28,5 +28,8 @@ export type ProductQueryOptions = {
   categoryId?: string;
   minPrice?: string;
   maxPrice?: string;
-  sortBy?: string;
+  sortBy?: "latest" | "oldest" | "priceAsc" | "priceDesc";
+
+  limit?: number;
+  cursor?: string;
 };

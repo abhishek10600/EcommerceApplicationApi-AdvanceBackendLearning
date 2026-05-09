@@ -50,7 +50,14 @@ export class ProductRepository implements IProductRepository {
   }
 
   async getAllActiveProducts(filters: ProductQueryOptions) {
-    const { categoryId, minPrice, maxPrice, sortBy } = filters;
+    const {
+      categoryId,
+      minPrice,
+      maxPrice,
+      sortBy,
+      limit = 10,
+      cursor,
+    } = filters;
 
     const where: Prisma.ProductWhereInput = {
       isActive: true,
@@ -72,6 +79,13 @@ export class ProductRepository implements IProductRepository {
       if (maxPrice) {
         where.price.lte = new Prisma.Decimal(maxPrice);
       }
+    }
+
+    // cursor logic
+    if (cursor) {
+      where.createdAt = {
+        lt: new Date(cursor),
+      };
     }
 
     // sorting
@@ -98,9 +112,22 @@ export class ProductRepository implements IProductRepository {
     const products = await prisma.product.findMany({
       where,
       orderBy,
+      take: limit + 1,
     });
 
-    return products;
+    let nextCursor: string | null = null;
+
+    if (products.length > limit) {
+      const nextItem = products.pop();
+
+      nextCursor = nextItem?.createdAt.toISOString() || null;
+    }
+
+    return {
+      products,
+      nextCursor,
+      hasMore: !!nextCursor,
+    };
   }
 
   async getProductsByCategoryId(categoryId: string) {

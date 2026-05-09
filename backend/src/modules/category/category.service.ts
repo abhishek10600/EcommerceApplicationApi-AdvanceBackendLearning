@@ -1,4 +1,6 @@
+import redis from "../../lib/redis.js";
 import { AppError } from "../../utils/AppError.js";
+import { invalidateCategoryCache } from "../../utils/cache.helper.js";
 import { IProductRepository } from "../product/product.interface.js";
 import { ICategoryRepository } from "./category.interface.js";
 import {
@@ -24,13 +26,30 @@ export class CategoryService {
 
     const newCategory = await this.categoryRepo.createCategory(data);
 
+    await invalidateCategoryCache();
+
     return toCategotryResponse(newCategory);
   }
 
   async getAllCategories() {
+    const cacheKey = `categories:all`;
+
+    const cachedCategories = await redis.get(cacheKey);
+
+    if (cachedCategories) {
+      console.log("CACHE HIT");
+      return JSON.parse(cachedCategories);
+    }
+
+    console.log("CACHE MISS");
+
     const categories = await this.categoryRepo.getAllCategories();
 
-    return toCategoryListResponse(categories);
+    const formattedResult = toCategoryListResponse(categories);
+
+    await redis.set(cacheKey, JSON.stringify(formattedResult), "EX", 300);
+
+    return formattedResult;
   }
 
   async updateCategory(data: updateCategoryDTO, categoryId: string) {
@@ -45,6 +64,8 @@ export class CategoryService {
       data,
       categoryId,
     );
+
+    await invalidateCategoryCache();
 
     return toCategotryResponse(updatedCategory);
   }
@@ -67,6 +88,8 @@ export class CategoryService {
     }
 
     await this.categoryRepo.deleteCategoryById(categoryId);
+
+    await invalidateCategoryCache();
 
     return true;
   }

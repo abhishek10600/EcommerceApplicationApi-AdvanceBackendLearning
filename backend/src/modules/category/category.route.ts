@@ -31,11 +31,6 @@ router
 
 router
   .route("/delete-category/:catId")
-  .delete(
-    verifyUser,
-    verifyAdmin,
-    validate(updateCategorySchema),
-    deleteCategoryController,
-  );
+  .delete(verifyUser, verifyAdmin, deleteCategoryController);
 
 export default router;

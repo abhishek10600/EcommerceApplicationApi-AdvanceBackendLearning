@@ -22,7 +22,11 @@ export interface IProductRepository {
 
   getAllProducts(): Promise<Product[]>;
 
-  getAllActiveProducts(filters: ProductQueryOptions): Promise<Product[]>;
+  getAllActiveProducts(filters: ProductQueryOptions): Promise<{
+    products: Product[];
+    nextCursor: string | null;
+    hasMore: boolean;
+  }>;
 
   getProductsByCategoryId(categoryId: string): Promise<Product[]>;
 
