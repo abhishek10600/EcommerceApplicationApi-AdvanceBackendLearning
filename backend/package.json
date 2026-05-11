@@ -39,10 +39,12 @@
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.1",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
     "pg": "^8.20.0",
+    "rate-limit-redis": "^5.0.0",
     "zod": "^4.3.6"
   }
 }

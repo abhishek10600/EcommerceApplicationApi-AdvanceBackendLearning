@@ -16,12 +16,17 @@ import {
   updateProductController,
 } from "./product.controller.js";
 import { upload } from "../../middlewares/multer.middleware.js";
+import {
+  productLimiter,
+  userLimiter,
+} from "../../middlewares/rateLimit.middleware.js";
 
 const router = express.Router();
 
 router
   .route("/create-product")
   .post(
+    productLimiter,
     verifyUser,
     verifySeller,
     upload.array("images", 5),
@@ -29,7 +34,13 @@ router
     createProductController,
   );
 
-router.route("/all-products").get(verifyUser, verifyAdmin, getAllProducts);
+// router
+//   .route("/all-products")
+//   .get(verifyUser, verifyAdmin, userLimiter, getAllProducts);
+
+router
+  .route("/all-products")
+  .get(verifyUser, userLimiter, verifyAdmin, getAllProducts);
 
 router.route("/all-active-products").get(getAllActiveProductsController);
 

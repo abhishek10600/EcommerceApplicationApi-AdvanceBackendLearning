@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { Response } from "express";
 import { NODE_ENV } from "../config/env.config.js";
+import { prisma } from "../lib/prisma.js";
 
 export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 10);
@@ -50,4 +51,21 @@ export const destroyCookies = (res: Response) => {
     secure: NODE_ENV === "production",
     sameSite: "lax",
   });
+};
+
+export const getUserById = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      phoneNumber: true,
+    },
+  });
+
+  return user;
 };
